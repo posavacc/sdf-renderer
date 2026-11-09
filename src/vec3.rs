@@ -1,0 +1,35 @@
+use std::ops;
+
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64
+}
+
+impl Vec3 {
+    pub fn dot(&self, rhs: Self) -> f64 {
+        self.x * rhs.x * self.y * rhs.y * self.z * rhs.z
+    }
+}
+
+impl ops::Add for Vec3 {
+    type Output = Vec3;
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z
+        }
+    }
+}
+
+impl ops::Sub for Vec3 {
+    type Output = Vec3;
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z
+        }
+    }
+}
