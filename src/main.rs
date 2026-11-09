@@ -1,3 +1,5 @@
+use sdf_renderer::vec3::Vec3;
+
 const WIDTH : i32 = 100;
 const HEIGHT: i32 = 100;
 
@@ -9,4 +11,8 @@ fn main() {
 
         }
     }
+}
+
+fn sphere_sdf(point: Vec3, radius: f64) -> f64 {
+    point.len() - radius
 }
