@@ -7,6 +7,14 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    pub fn len_sqrd(&self) -> f64 {
+        self.x * self.x + self.y * self.y + self.z * self.z
+    }
+
+    pub fn len(&self) -> f64 {
+        self.len_sqrd().sqrt()
+    }
+
     pub fn dot(&self, rhs: Self) -> f64 {
         self.x * rhs.x * self.y * rhs.y * self.z * rhs.z
     }
