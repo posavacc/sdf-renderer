@@ -61,29 +61,28 @@ impl Camera {
 }
 
 fn main() {
-    let cam = Camera::new(Vec3::ZERO, 60.0_f64.to_radians(), WIDTH);
+    let cam = Camera::new(Vec3::new(5.0, 2.0, 5.0), 80.0_f64.to_radians(), WIDTH);
 
-    let s1 = Sphere::new(Vec3::new(0.0, 0.0, -5.0), 1.0);
-    let s2 = Sphere::new(Vec3::new(1.0, 1.0, -2.0), 0.3);
-    let spheres = vec![s1, s2];
+    let s1 = Shape::Box { pos: Vec3::new(0.0, 0.0, -5.0), size: Vec3::new(1.0, 2.0, 1.0) };
+    let shapes = vec![s1];
 
     print!("P3\n{} {}\n255\n", cam.img_width, cam.img_height);
     for line in 0..cam.img_height {
         for col in 0..cam.img_width {
             let ray = cam.get_ray(line, col);
 
-            write_color(ray_march(ray, &spheres, col, line));
+            write_color(ray_march(ray, &shapes));
         }
     }
 }
 
-fn ray_march(first_ray: Ray, spheres: &[Sphere], col: i32, line: i32) -> Vec3 {
+fn ray_march(first_ray: Ray, shapes: &[Shape]) -> Vec3 {
     let mut closest = f64::INFINITY;
     let mut ray = first_ray;
 
     for _ in 0..MARCH_DEPTH {
-        for s in spheres {
-            let dst = sphere_sdf(s, ray.origin - s.pos);
+        for s in shapes {
+            let dst = s.signed_distance(ray.origin);
             if dst < closest {
                 closest = dst
             }
@@ -103,19 +102,26 @@ fn ray_march(first_ray: Ray, spheres: &[Sphere], col: i32, line: i32) -> Vec3 {
     return Vec3::ZERO;
 }
 
-struct Sphere {
-    pos: Vec3,
-    radius: f64
+enum Shape {
+    Sphere { pos: Vec3, radius: f64 },
+    Box { pos: Vec3, size: Vec3 },
 }
 
-impl Sphere {
-    pub fn new(pos: Vec3, radius: f64) -> Self {
-        Self { pos, radius }
+impl Shape {
+    pub fn signed_distance(&self, p: Vec3) -> f64 {
+        match self {
+            Shape::Sphere { pos, radius } => {
+                let p = p - *pos;
+                (p - *pos).len() - radius
+            }
+
+            Shape::Box { pos, size } => {
+                let p = p - *pos;
+                let q = p.abs() - *size;
+                q.max(Vec3::ZERO).len() + q.max_comp().min(0.0)
+            }
+        }
     }
-}
-
-fn sphere_sdf(s: &Sphere, p: Vec3) -> f64 {
-    p.len() - s.radius
 }
 
 fn linear_to_gamma(linear_component: f64) -> f64 {

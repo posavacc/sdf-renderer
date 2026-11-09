@@ -13,6 +13,32 @@ impl Vec3 {
         Self { x, y, z }
     }
 
+    pub fn max_comp(self) -> f64 {
+        self.x.max(self.y.max(self.z))
+    }
+
+    // element-wise max
+    pub fn max(self, rhs: Self) -> Self {
+        Self {
+            x: self.x.max(rhs.x),
+            y: self.y.max(rhs.y),
+            z: self.z.max(rhs.z)
+        }
+    }
+
+    // element-wise max
+    pub fn min(self, rhs: Self) -> Self {
+        Self {
+            x: self.x.min(rhs.x),
+            y: self.y.min(rhs.y),
+            z: self.z.min(rhs.z)
+        }
+    }
+
+    pub fn abs(self) -> Self {
+        Self { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
+    }
+
     pub fn normalize(self) -> Self {
         self / self.len()
     }
