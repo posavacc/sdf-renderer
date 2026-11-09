@@ -47,9 +47,9 @@ impl ops::Sub for Vec3 {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self::Output {
         Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z
         }
     }
 }

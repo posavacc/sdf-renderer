@@ -1,7 +1,7 @@
 use sdf_renderer::vec3::Vec3;
 use sdf_renderer::ray::Ray;
 
-const WIDTH : i32 = 100;
+const WIDTH : i32 = 800;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
 const MARCH_DEPTH: i32 = 50;
@@ -37,7 +37,7 @@ impl Camera {
         let pixel_delta_v = delta_v * down;
         let pixel_delta_h = delta_h * right;
 
-        let fpp = Vec3::new(pos.x + l, pos.y + h, pos.z - 1.0);
+        let fpp = Vec3::new(pos.x - l + delta_h * 0.5, pos.y + h - delta_v * 0.5, pos.z - 1.0);
 
         Self {
             pos,
@@ -63,36 +63,41 @@ impl Camera {
 fn main() {
     let cam = Camera::new(Vec3::ZERO, 60.0_f64.to_radians(), WIDTH);
 
-    let s1 = Sphere::new(Vec3::new(0.0, 2.0, -5.0), 1.0);
-    let s2 = Sphere::new(Vec3::new(-3.0, 0.0, -2.0), 0.3);
-    let spheres = vec![s1];
+    let s1 = Sphere::new(Vec3::new(0.0, 0.0, -5.0), 1.0);
+    let s2 = Sphere::new(Vec3::new(1.0, 1.0, -2.0), 0.3);
+    let spheres = vec![s1, s2];
 
     print!("P3\n{} {}\n255\n", cam.img_width, cam.img_height);
     for line in 0..cam.img_height {
         for col in 0..cam.img_width {
             let ray = cam.get_ray(line, col);
 
-            write_color(ray_march(ray, &spheres));
+            write_color(ray_march(ray, &spheres, col, line));
         }
     }
 }
 
-fn ray_march(mut ray: Ray, spheres: &Vec<Sphere>) -> Vec3 {
-    let mut closest = 1e16;
+fn ray_march(first_ray: Ray, spheres: &[Sphere], col: i32, line: i32) -> Vec3 {
+    let mut closest = f64::INFINITY;
+    let mut ray = first_ray;
 
     for _ in 0..MARCH_DEPTH {
         for s in spheres {
-            let dst = sphere_sdf(&s, ray.origin - s.pos);
+            let dst = sphere_sdf(s, ray.origin - s.pos);
             if dst < closest {
                 closest = dst
             }
         }
 
-        if closest < 1e-3 {
+        if closest < 1e-4 {
             return Vec3::new(1.0, 1.0, 1.0);
+        } else if closest > 1e4 {
+            return Vec3::ZERO;
         }
 
-        ray = Ray::new(ray.origin + ray.dir * closest, ray.dir);
+        ray.origin = ray.at(closest);
+
+        closest = f64::INFINITY;
     }
 
     return Vec3::ZERO;
