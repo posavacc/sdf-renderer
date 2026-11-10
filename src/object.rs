@@ -1,5 +1,6 @@
 use crate::shape::Shape;
 use crate::vec3::Vec3;
+use crate::material::Material;
 
 // TODO: add rotation
 #[derive(Copy, Clone)]
@@ -13,9 +14,4 @@ impl Object {
     pub fn new(shape: Shape, pos: Vec3, material: Material) -> Self {
         Self { shape, pos, material }
     }
-}
-
-#[derive(Copy, Clone)]
-pub enum Material {
-    Lambertian { color: Vec3 },
 }

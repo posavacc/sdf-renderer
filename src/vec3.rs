@@ -1,5 +1,6 @@
 use std::{iter::Sum, ops};
 use rand::{RngExt, rng};
+use rand_distr::StandardNormal;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -13,10 +14,18 @@ impl Vec3 {
         Self { x, y, z }
     }
 
-    pub fn random() -> Vec3 {
-        let x = rng().random_range(-1.0..1.0);
-        let y = rng().random_range(-1.0..1.0);
-        let z = rng().random_range(-1.0..1.0);
+    // self is the direction of the hemisphere
+    // self is assumed normalized
+    pub fn random_unit_hemisphere(self) -> Self {
+        let rand = Vec3::random_unit_vec();
+        if self.dot(rand) < 0.0 { -rand } else { rand }
+    }
+
+    /// uses normal distribution
+    pub fn random_unit_vec() -> Self {
+        let x = rng().sample::<f64, _>(StandardNormal) * 2.0 - 1.0;
+        let y = rng().sample::<f64, _>(StandardNormal) * 2.0 - 1.0;
+        let z = rng().sample::<f64, _>(StandardNormal) * 2.0 - 1.0;
 
         Self { x, y, z }
     }
@@ -25,7 +34,7 @@ impl Vec3 {
         self.x.max(self.y.max(self.z))
     }
 
-    // element-wise max
+    /// element-wise max
     pub fn max(self, rhs: Self) -> Self {
         Self {
             x: self.x.max(rhs.x),
@@ -34,7 +43,7 @@ impl Vec3 {
         }
     }
 
-    // element-wise max
+    /// element-wise max
     pub fn min(self, rhs: Self) -> Self {
         Self {
             x: self.x.min(rhs.x),
@@ -64,6 +73,7 @@ impl Vec3 {
     }
 
     pub const ZERO: Self = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
+    pub const ONE: Self = Vec3 { x: 1.0, y: 1.0, z: 1.0 };
 }
 
 impl ops::Neg for Vec3 {

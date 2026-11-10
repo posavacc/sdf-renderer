@@ -5,6 +5,7 @@ pub mod ray;
 pub mod camera;
 pub mod shape;
 pub mod object;
+pub mod material;
 
 pub fn parse_color(color: Vec3) -> String {
     let r = linear_to_gamma(color.x);
