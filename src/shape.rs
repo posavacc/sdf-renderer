@@ -1,6 +1,6 @@
 use crate::vec3::Vec3;
 
-const EPSILON: f64 = 1e-4;
+const EPSILON: f64 = 1e-8;
 
 #[derive(Copy, Clone)]
 pub enum Shape {

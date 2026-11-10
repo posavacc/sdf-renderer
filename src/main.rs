@@ -10,12 +10,12 @@ use sdf_renderer::shape::Shape;
 use sdf_renderer::parse_color;
 
 const WIDTH: i32 = 800;
-const SPP: i32 = 20;
+const SPP: i32 = 128;
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     let path = if args.len() == 1 {
-        eprintln!("No argument provided, falling back to \"/output.ppm\" file path");
+        eprintln!("No argument provided, falling back to \"output.ppm\" file path");
         "output.ppm".to_string()
     } else if args.len() != 2 {
         eprintln!("Please enter only one argument (output image path, either absolute or relative to current directory)");
@@ -24,7 +24,7 @@ fn main() -> ExitCode {
         args[1].clone()
     };
 
-    let cam = Camera::new(Vec3::new(0.0, 0.0, 0.0), 80.0_f64.to_radians(), WIDTH);
+    let cam = Camera::new(Vec3::new(0.0, 2.0, 0.0), 80.0_f64.to_radians(), WIDTH);
 
     let plane = Shape::Box { size: Vec3::new(10.0, 0.1, 4.9) };
     let sphere = Shape::Sphere { radius: 1.0 };
@@ -44,23 +44,10 @@ fn main() -> ExitCode {
     let mut image: String = String::with_capacity(ppm_header.capacity() + (cam.img_width * cam.img_height * 11) as usize);
     image.push_str(&ppm_header);
 
-    let mut idcs = Vec::new();
-    for line in 0..cam.img_height {
-        for col in 0..cam.img_width {
-            idcs.push(line * cam.img_width + col);
-        }
-    }
-
-    let pixels: Vec<Vec3> = idcs.par_iter().map(|i| {
+    let pixels: Vec<Vec3> = (0..(cam.img_width * cam.img_height)).into_par_iter().map(|i| {
         let (line, col) = (i / cam.img_width, i % cam.img_width);
         let ray = cam.get_ray(line, col);
-        let mut color = Vec3::ZERO;
-
-        for _ in 0..SPP {
-            color += ray.trace(&objects);
-        }
-
-        color / SPP as f64
+        (0..SPP).map(|_| ray.trace(&objects)).sum::<Vec3>() / SPP as f64
     }).collect();
 
     let pixels: String = pixels.into_iter().map(|color| parse_color(color)).collect();

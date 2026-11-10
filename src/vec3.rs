@@ -1,4 +1,4 @@
-use std::ops;
+use std::{iter::Sum, ops};
 use rand::{RngExt, rng};
 
 #[derive(Copy, Clone, Debug)]
@@ -152,5 +152,11 @@ impl ops::Div<f64> for Vec3 {
             y: self.y / rhs,
             z: self.z / rhs
         }
+    }
+}
+
+impl Sum for Vec3 {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Vec3::ZERO, |acc, v| acc + v)
     }
 }
