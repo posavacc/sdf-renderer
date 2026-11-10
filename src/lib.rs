@@ -6,7 +6,7 @@ pub mod camera;
 pub mod shape;
 pub mod object;
 
-pub fn write_color(color: Vec3) {
+pub fn parse_color(color: Vec3) -> String {
     let r = linear_to_gamma(color.x);
     let g = linear_to_gamma(color.y);
     let b = linear_to_gamma(color.z);
@@ -15,7 +15,7 @@ pub fn write_color(color: Vec3) {
     let g = (256.0 * g.clamp(0.0, 0.999)) as i32;
     let b = (256.0 * b.clamp(0.0, 0.999)) as i32;
 
-    print!("{r} {g} {b}\n");
+    format!("{r} {g} {b}\n")
 }
 
 fn linear_to_gamma(linear_component: f64) -> f64 {

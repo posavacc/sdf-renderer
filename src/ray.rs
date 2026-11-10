@@ -3,7 +3,7 @@ use crate::vec3::Vec3;
 
 const BOUNCE_LIMIT: i32 = 30;
 
-const MAX_STEPS: i32 = 500;
+const MAX_STEPS: i32 = 128;
 const MAX_DIST: f64 = 1e4;
 const EPSILON: f64 = 1e-8;
 
