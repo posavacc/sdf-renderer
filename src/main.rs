@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use std::process::ExitCode;
+use rayon::prelude::*;
 
 use sdf_renderer::object::{Material, Object};
 use sdf_renderer::vec3::Vec3;
@@ -43,20 +44,28 @@ fn main() -> ExitCode {
     let mut image: String = String::with_capacity(ppm_header.capacity() + (cam.img_width * cam.img_height * 11) as usize);
     image.push_str(&ppm_header);
 
+    let mut idcs = Vec::new();
     for line in 0..cam.img_height {
         for col in 0..cam.img_width {
-            let ray = cam.get_ray(line, col);
-            let mut color = Vec3::ZERO;
-
-            for _ in 0..SPP {
-                color += ray.trace(&objects);
-            }
-
-            let color = color / SPP as f64;
-
-            image.push_str(&parse_color(color));
+            idcs.push(line * cam.img_width + col);
         }
     }
+
+    let pixels: Vec<Vec3> = idcs.par_iter().map(|i| {
+        let (line, col) = (i / cam.img_width, i % cam.img_width);
+        let ray = cam.get_ray(line, col);
+        let mut color = Vec3::ZERO;
+
+        for _ in 0..SPP {
+            color += ray.trace(&objects);
+        }
+
+        color / SPP as f64
+    }).collect();
+
+    let pixels: String = pixels.into_iter().map(|color| parse_color(color)).collect();
+
+    image.push_str(&pixels);
 
     eprintln!("Writing to file...");
     output_file.write_all(image.as_bytes()).expect("should be able to write to file");
