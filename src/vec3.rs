@@ -1,5 +1,5 @@
 use std::ops;
-
+use rand::{RngExt, rng};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -10,6 +10,14 @@ pub struct Vec3 {
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
+    }
+
+    pub fn random() -> Vec3 {
+        let x = rng().random_range(-1.0..1.0);
+        let y = rng().random_range(-1.0..1.0);
+        let z = rng().random_range(-1.0..1.0);
+
         Self { x, y, z }
     }
 
@@ -58,6 +66,13 @@ impl Vec3 {
     pub const ZERO: Self = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
 }
 
+impl ops::Neg for Vec3 {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        Self { x: -self.x, y: -self.y, z: -self.z }
+    }
+}
+
 impl ops::Add for Vec3 {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
@@ -69,6 +84,14 @@ impl ops::Add for Vec3 {
     }
 }
 
+impl ops::AddAssign for Vec3 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
+    }
+}
+
 impl ops::Sub for Vec3 {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self::Output {
@@ -77,6 +100,25 @@ impl ops::Sub for Vec3 {
             y: self.y - rhs.y,
             z: self.z - rhs.z
         }
+    }
+}
+
+impl ops::Mul for Vec3 {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z
+        }
+    }
+}
+
+impl ops::MulAssign for Vec3 {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.x *= rhs.x;
+        self.y *= rhs.y;
+        self.z *= rhs.z;
     }
 }
 

@@ -4,6 +4,7 @@ pub mod vec3;
 pub mod ray;
 pub mod camera;
 pub mod shape;
+pub mod object;
 
 pub fn write_color(color: Vec3) {
     let r = linear_to_gamma(color.x);
