@@ -2,11 +2,14 @@ use crate::object::Object;
 use crate::material::Material;
 use crate::vec3::Vec3;
 
-const BOUNCE_LIMIT: i32 = 1;
+const NIGHT: bool = true;
 
-const MAX_STEPS: i32 = 128;
+const BOUNCE_LIMIT: i32 = 30;
+
+const MAX_STEPS: i32 = 256;
 const MAX_DIST: f64 = 1e3;
-const EPSILON: f64 = 1e-8;
+const EPSILON: f64 = 1e-4;
+const BOUNCE_OFFSET: f64 = 1e-3;
 
 const SKY_COLOR: Vec3 = Vec3 { x: 0.5, y: 0.7, z: 1.0 };
 
@@ -29,9 +32,9 @@ impl Ray {
             if let Some(hit_info) = ray.march(objects) {
                 match hit_info.material {
                     Material::Lambertian { color, smoothness } => {
-                        ray.origin = hit_info.point + hit_info.normal * 1e-6;
+                        ray.origin = hit_info.point + hit_info.normal * BOUNCE_OFFSET;
 
-                        ray.dir = Material::lambertian_scatter(hit_info.normal, ray.dir, smoothness);
+                        ray.dir = Material::lambertian_scatter(ray.dir, hit_info.normal, smoothness);
 
                         ray_color *= color;
                     },
@@ -51,6 +54,7 @@ impl Ray {
         let mut closest_dst = f64::INFINITY;
         let mut closest_obj: Option<Object> = None;
         let mut ray = self;
+        let mut t = 0.0;
 
         for _ in 0..MAX_STEPS {
             for obj in objects {
@@ -62,7 +66,7 @@ impl Ray {
             }
 
             if let Some(obj) = closest_obj {
-                if closest_dst < EPSILON {
+                if closest_dst < EPSILON * t {
                     let info = HitInfo::new(
                         ray.at(closest_dst),
                         obj.shape.normal(obj.pos, ray.origin),
@@ -77,6 +81,8 @@ impl Ray {
             }
 
             ray.origin = ray.at(closest_dst);
+
+            t += closest_dst;
 
             closest_dst = f64::INFINITY;
         }
@@ -99,8 +105,12 @@ impl Ray {
 }
 
 fn sky_color(dir: Vec3) -> Vec3 {
-    let a = 0.5 * (dir.y + 1.0);
-    Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + SKY_COLOR * a
+    if NIGHT {
+        Vec3::ZERO
+    } else {
+        let a = 0.5 * (dir.y + 1.0);
+        Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + SKY_COLOR * a
+    }
 }
 
 struct HitInfo {

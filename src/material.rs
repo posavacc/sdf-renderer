@@ -1,5 +1,3 @@
-use rand::seq::index;
-
 use crate::Vec3;
 
 #[derive(Copy, Clone)]
@@ -9,7 +7,7 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn lambertian_scatter(n: Vec3, in_dir: Vec3, smoothness: f64) -> Vec3 {
+    pub fn lambertian_scatter(in_dir: Vec3, n: Vec3, smoothness: f64) -> Vec3 {
         let lamb_scatter = (Vec3::random_unit_vec() + n).normalize();
         let specular_reflection = reflect(in_dir, n);
 

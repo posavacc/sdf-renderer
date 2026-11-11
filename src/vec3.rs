@@ -2,7 +2,7 @@ use std::{iter::Sum, ops};
 use rand::{RngExt, rng};
 use rand_distr::StandardNormal;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -69,7 +69,7 @@ impl Vec3 {
     }
 
     pub fn dot(self, rhs: Self) -> f64 {
-        self.x * rhs.x * self.y * rhs.y * self.z * rhs.z
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
     pub const ZERO: Self = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
