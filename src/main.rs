@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use std::process::ExitCode;
+use std::sync::atomic::{self, AtomicU64};
 use rayon::prelude::*;
 
 use sdf_renderer::object::Object;
@@ -61,11 +62,26 @@ fn main() -> ExitCode {
     let mut image: String = String::with_capacity(ppm_header.capacity() + (cam.img_width * cam.img_height * 11) as usize);
     image.push_str(&ppm_header);
 
+    let counter: atomic::AtomicU64 = AtomicU64::new(0);
     let pixels: Vec<Vec3> = (0..(cam.img_width * cam.img_height)).into_par_iter().map(|i| {
         let (line, col) = (i / cam.img_width, i % cam.img_width);
+
+        let pixels_iterated = counter.load(atomic::Ordering::Relaxed);
+
+        if pixels_iterated % 1000 == 0 {
+            let ratio = pixels_iterated as f64 / (cam.img_width * cam.img_height) as f64;
+            eprint!("\r{:.2}%", ratio * 100.0);
+        }
+
         let ray = cam.get_ray(line, col);
+
+        _ = counter.fetch_add(1, atomic::Ordering::Relaxed);
+
         (0..SPP).map(|_| ray.trace(&objects)).sum::<Vec3>() / SPP as f64
     }).collect();
+
+    eprint!("\r      ");
+    eprint!("\r100%\n");
 
     let pixels: String = pixels.into_iter().map(|color| parse_color(color)).collect();
 
