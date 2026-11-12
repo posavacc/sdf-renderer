@@ -1,8 +1,10 @@
+use rand::{RngExt, rng};
+
 use crate::object::Object;
 use crate::material::Material;
 use crate::vec3::Vec3;
 
-const NIGHT: bool = true;
+const NIGHT: bool = false;
 
 const BOUNCE_LIMIT: i32 = 30;
 
@@ -96,6 +98,14 @@ impl Ray {
             return Some(info);
         } else {
             return None;
+        }
+    }
+
+    fn shadow_ray(&self, maybe_lights: Option<&[Object]>) -> Option<HitInfo> {
+        if let Some(lights) = maybe_lights {
+            let light = lights[rng().random_range(0..lights.len())];
+
+
         }
     }
 

@@ -25,13 +25,17 @@ impl Shape {
     }
 
     pub fn normal(&self, pos: Vec3, p: Vec3) -> Vec3 {
-        Vec3::new(
-            self.signed_distance(pos, p + Vec3::new(EPSILON, 0.0, 0.0)) -
-            self.signed_distance(pos, p - Vec3::new(EPSILON, 0.0, 0.0)),
-            self.signed_distance(pos, p + Vec3::new(0.0, EPSILON, 0.0)) -
-            self.signed_distance(pos, p - Vec3::new(0.0, EPSILON, 0.0)),
-            self.signed_distance(pos, p + Vec3::new(0.0, 0.0, EPSILON)) -
-            self.signed_distance(pos, p - Vec3::new(0.0, 0.0, EPSILON))
-        ).normalize()
+        match self {
+            Shape::Sphere { radius: _ } => (p - pos).normalize(),
+            _ => (
+                Vec3::new(1.0, -1.0, -1.0) * self.signed_distance(pos, p + Vec3::new(1.0, -1.0, -1.0) *
+                    EPSILON) +
+                Vec3::new(-1.0, -1.0, 1.0) * self.signed_distance(pos, p + Vec3::new(-1.0, -1.0, 1.0) *
+                    EPSILON) +
+                Vec3::new(-1.0, 1.0, -1.0) * self.signed_distance(pos, p + Vec3::new(-1.0, 1.0, -1.0) *
+                    EPSILON) +
+                Vec3::new(1.0, 1.0, 1.0) * self.signed_distance(pos, p + Vec3::new(1.0, 1.0, 1.0) * EPSILON)
+            ).normalize()
+        }
     }
 }
