@@ -1,6 +1,6 @@
-use crate::vec3::Vec3;
+use std::f64::consts::PI;
 
-const EPSILON: f64 = 1e-4;
+use crate::vec3::Vec3;
 
 #[derive(Copy, Clone)]
 pub enum Shape {
@@ -9,33 +9,13 @@ pub enum Shape {
 }
 
 impl Shape {
-    pub fn signed_distance(&self, pos: Vec3, p: Vec3) -> f64 {
+    pub fn area(&self) -> f64 {
         match self {
-            Shape::Sphere { radius } => {
-                let p = p - pos;
-                p.len() - radius
-            }
-
+            Shape::Sphere { radius } => 4.0 * PI * radius * radius,
             Shape::Box { size } => {
-                let p = p - pos;
-                let q = p.abs() - *size;
-                q.max(Vec3::ZERO).len() + q.max_comp().min(0.0)
+                let (a, b, c) = (2.0 * size.x, 2.0 * size.y, 2.0 * size.z);
+                2.0 * (a*b + a*c + b*c)
             }
-        }
-    }
-
-    pub fn normal(&self, pos: Vec3, p: Vec3) -> Vec3 {
-        match self {
-            Shape::Sphere { radius: _ } => (p - pos).normalize(),
-            _ => (
-                Vec3::new(1.0, -1.0, -1.0) * self.signed_distance(pos, p + Vec3::new(1.0, -1.0, -1.0) *
-                    EPSILON) +
-                Vec3::new(-1.0, -1.0, 1.0) * self.signed_distance(pos, p + Vec3::new(-1.0, -1.0, 1.0) *
-                    EPSILON) +
-                Vec3::new(-1.0, 1.0, -1.0) * self.signed_distance(pos, p + Vec3::new(-1.0, 1.0, -1.0) *
-                    EPSILON) +
-                Vec3::new(1.0, 1.0, 1.0) * self.signed_distance(pos, p + Vec3::new(1.0, 1.0, 1.0) * EPSILON)
-            ).normalize()
         }
     }
 }

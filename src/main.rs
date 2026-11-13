@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Write;
+use std::ops::Index;
 use std::process::ExitCode;
 use std::sync::atomic::{self, AtomicU64};
 use rayon::prelude::*;
@@ -11,8 +12,8 @@ use sdf_renderer::camera::Camera;
 use sdf_renderer::shape::Shape;
 use sdf_renderer::parse_color;
 
-const WIDTH: i32 = 400;
-const SPP: i32 = 512;
+const WIDTH: i32 = 900;
+const SPP: i32 = 100;
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
@@ -33,6 +34,7 @@ fn main() -> ExitCode {
     let back_wall = Shape::Box { size: Vec3::new(2.0, 2.5, 0.1) };
     let led = Shape::Box { size: Vec3::new(0.4, 0.1, 0.2) };
     let sphere = Shape::Sphere { radius: 0.5 };
+    let lil_sphere = Shape::Sphere { radius: 0.25 };
 
     let red = Material::Lambertian { color: Vec3::new(1.0, 0.0, 0.0), smoothness: 0.0 };
     let green = Material::Lambertian { color: Vec3::new(0.0, 1.0, 0.0), smoothness: 0.0 };
@@ -48,14 +50,15 @@ fn main() -> ExitCode {
     let left_wall = Object::new(side_wall, Vec3::new(-2.1, 0.0, -5.0), green);
     let right_wall = Object::new(side_wall, Vec3::new(2.1, 0.0, -5.0), red);
     let back_wall = Object::new(back_wall, Vec3::new(0.0, 0.0, -7.1), gray);
-    let led = Object::new(led, Vec3::new(0.0, 2.5, -5.0), light);
+    let led = Object::new(/*led*/ lil_sphere, Vec3::new(0.0, 2.5, -5.0), light);
 
     let s0 = Object::new(sphere, Vec3::new(-1.5, -2.0, -4.0), s0);
     let s1 = Object::new(sphere, Vec3::new(-0.5, -2.0, -5.0), s1);
     let s2 = Object::new(sphere, Vec3::new(0.5, -2.0, -4.0), s2);
     let s3 = Object::new(sphere, Vec3::new(1.5, -2.0, -5.0), s3);
 
-    let objects = vec![s0, s1, s2, s3, /*led,*/ floor, ceiling, left_wall, right_wall, back_wall];
+    let objects = vec![s0, s1, s2, s3, led, floor, ceiling, left_wall, right_wall, back_wall];
+    let maybe_lights: Option<&[Object]> = Some(&vec![led]);
 
     let mut output_file = File::create(path).expect("should be able to open or create file");
     let ppm_header = format!("P3\n{} {}\n255\n", cam.img_width, cam.img_height);
@@ -77,7 +80,7 @@ fn main() -> ExitCode {
 
         _ = counter.fetch_add(1, atomic::Ordering::Relaxed);
 
-        (0..SPP).map(|_| ray.trace(&objects)).sum::<Vec3>() / SPP as f64
+        (0..SPP).map(|_| ray.trace(&objects, maybe_lights)).sum::<Vec3>() / SPP as f64
     }).collect();
 
     eprint!("\r      ");
